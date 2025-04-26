@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte OpenLayers</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/7.2.2/ol.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        #mode-select,
+        #coordinates,
+        #guess-form {
+            padding: 10px 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.1em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #mode {
+            font-size: 1em;
+            padding: 5px 10px;
+        }
+
+        #coordinates {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        #map {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        #guess-form {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #guess-form input {
+            margin: 5px;
+            padding: 5px;
+            font-size: 1em;
+            width: 150px;
+        }
+
+        #guess-form button {
+            padding: 5px 15px;
+            font-size: 1em;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .dms-group {
+            margin-bottom: 10px;
+        }
+
+        .dms-inputs {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .dms-inputs input {
+            width: 60px;
+            padding: 5px;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .dms-inputs span {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mode-select">
+        <select id="mode">
+            <option value="explore">🗺️ Explore</option>
+            <option value="coordinates-to-point">🎯 Coordinates ➔ Point</option>
+            <option value="point-to-coordinates">🧭 Point ➔ Coordinates</option>
+        </select>
+    </div>
+
+    <div id="coordinates">📍 Choose a mode to begin</div>
+
+    <div id="guess-form" style="margin: 10px; display: none;">
+        <h3>Guess the coordinates (DMS format)</h3>
+
+        <div class="dms-group">
+            <label>Longitude:</label>
+            <div class="dms-inputs">
+                <input id="lon-deg" type="number" min="-180" max="180"><span>°</span>
+                <input id="lon-min" type="number" min="0" max="59"><span>'</span>
+                <input id="lon-sec" type="number" min="0" max="59.9999" step="0.01"><span>"</span>
+            </div>
+        </div>
+
+        <div class="dms-group">
+            <label>Latitude:</label>
+            <div class="dms-inputs">
+                <input id="lat-deg" type="number" min="-90" max="90"><span>°</span>
+                <input id="lat-min" type="number" min="0" max="59"><span>'</span>
+                <input id="lat-sec" type="number" min="0" max="59.9999" step="0.01"><span>"</span>
+            </div>
+        </div>
+
+
+        <button id="submit-guess">Submit Guess</button>
+    </div>
+
+    <div id="map" class="map"></div>
+
+    <script src="bundle.js"></script>
+</body>
+
+</html>
