@@ -17,9 +17,27 @@
             background-color: #f0f2f5;
         }
 
+        #controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
         #mode-select,
+        #difficulty-select {
+            padding: 10px 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.1em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+
+        #instructions,
         #coordinates,
-        #guess-form {
+        #guess-form,
+        #submit-form {
             padding: 10px 20px;
             background-color: #ffffff;
             border-bottom: 1px solid #ddd;
@@ -30,14 +48,27 @@
             align-items: center;
         }
 
-        #mode {
+        #mode,
+        #difficulty {
             font-size: 1em;
             padding: 5px 10px;
         }
 
-        #coordinates {
+        #instructions {
             flex-direction: column;
             text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #coordinates {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            gap: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         #map {
@@ -46,20 +77,23 @@
             height: 100%;
         }
 
-        #guess-form {
+        #guess-form,
+        #submit-form {
             display: none;
             flex-direction: column;
             align-items: center;
         }
 
-        #guess-form input {
+        #guess-form input,
+        #submit-form input {
             margin: 5px;
             padding: 5px;
             font-size: 1em;
             width: 150px;
         }
 
-        #guess-form button {
+        #guess-form button,
+        #submit-form button {
             padding: 5px 15px;
             font-size: 1em;
             margin-top: 10px;
@@ -68,6 +102,8 @@
 
         .dms-group {
             margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .dms-inputs {
@@ -75,6 +111,7 @@
             align-items: center;
             gap: 4px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .dms-inputs input {
@@ -92,17 +129,28 @@
 </head>
 
 <body>
-    <div id="mode-select">
-        <select id="mode">
-            <option value="explore">🗺️ Explore</option>
-            <option value="coordinates-to-point">🎯 Coordinates ➔ Point</option>
-            <option value="point-to-coordinates">🧭 Point ➔ Coordinates</option>
-        </select>
+    <div id="controls">
+        <div id="mode-select">
+            <select id="mode">
+                <option value="explore">🗺️ Explore</option>
+                <option value="coordinates-to-point">🎯 Coordinates ➔ Point</option>
+                <option value="point-to-coordinates">🧭 Point ➔ Coordinates</option>
+            </select>
+        </div>
+
+        <div id="difficulty-select" style="display: none;">
+            <select id="difficulty">
+                <option value="easy">🌟 Easy</option>
+                <!-- <option value="normal">🌟🌟 Normal</option> -->
+                <option value="expert">🌟🌟🌟 Expert</option>
+            </select>
+        </div>
     </div>
 
-    <div id="coordinates">📍 Choose a mode to begin</div>
+    <div id="instructions">📍 Choose a mode to begin</div>
+    <div id="coordinates"></div>
 
-    <div id="guess-form" style="margin: 10px; display: none;">
+    <div id="guess-form">
         <h3>Guess the coordinates (DMS format)</h3>
 
         <div class="dms-group">
@@ -123,8 +171,11 @@
             </div>
         </div>
 
-
         <button id="submit-guess">Submit Guess</button>
+    </div>
+
+    <div id="submit-form">
+        <button id="submit-coordinates">Submit Coordinates</button>
     </div>
 
     <div id="map" class="map"></div>

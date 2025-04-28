@@ -8,7 +8,8 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
-import {Icon, Style} from 'ol/style';
+import LineString from 'ol/geom/LineString';
+import {Icon, Style, Stroke} from 'ol/style';
 
 // —————————————————————————
 // Map & Vector setup
@@ -24,12 +25,44 @@ const vectorSource = new VectorSource();
 const markerStyle = new Style({
   image: new Icon({
     anchor: [0.5, 1],
-    src: 'https://openlayers.org/en/v7.2.2/examples/data/icon.png'
+    src: 'data:image/svg+xml,' + encodeURIComponent(`
+      <svg width="20" height="30" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="8" fill="red" />
+        <polygon points="10,30 15,10 5,10" fill="red" />
+      </svg>
+    `)
   })
 });
+
+const guessedMarkerStyle = new Style({
+  image: new Icon({
+    anchor: [0.5, 1],
+    src: 'data:image/svg+xml,' + encodeURIComponent(`
+      <svg width="20" height="30" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="8" fill="green" />
+        <polygon points="10,30 15,10 5,10" fill="green" />
+      </svg>
+    `)
+  })
+});
+
+const lineStyle = new Style({
+  stroke: new Stroke({
+    color: 'green',
+    width: 2
+  })
+});
+
 const vectorLayer = new VectorLayer({
   source: vectorSource,
-  style: markerStyle
+  style: (feature) => {
+    if (feature.get('type') === 'guessed') {
+      return guessedMarkerStyle;
+    } else if (feature.get('type') === 'line') {
+      return lineStyle;
+    }
+    return markerStyle;
+  }
 });
 
 const map = new Map({
@@ -44,14 +77,57 @@ const map = new Map({
 
 let currentMode = 'explore';
 let targetCoordinate = null;
+let currentDifficulty = 'easy'; // Default difficulty
+
+// —————————————————————————
+// Difficulty Levels
+// —————————————————————————
+
+const easyCoordinates = [
+  [-58.3816, -34.6037], // Buenos Aires, Argentina
+  [138.6007, -34.9285], // Adelaide, Australia
+  [153.0251, -27.4698], // Brisbane, Australia
+  [149.1287, -35.2809], // Canberra, Australia
+  [144.9631, -37.8162], // Melbourne, Australia
+  [115.8605, -31.9505], // Perth, Australia
+  [151.2076, -33.8651], // Sydney, Australia
+  [-46.6333, -23.5505], // São Paulo, Brazil
+  [116.3972, 39.9075],  // Beijing, China
+  [2.3522, 48.8566],    // Paris, France
+  [13.4050, 52.5200],   // Berlin, Germany
+  [77.2245, 28.6353],   // New Delhi, India
+  [72.8777, 19.0760],   // Mumbai, India
+  [12.4964, 41.9028],   // Rome, Italy
+  [139.6917, 35.6895],  // Tokyo, Japan
+  [135.5022, 34.6937],  // Osaka, Japan
+  [174.7633, -36.8485], // Auckland, New Zealand
+  [172.6362, -43.5321], // Christchurch, New Zealand
+  [120.9842, 14.5995],  // Manila, Philippines
+  [37.6173, 55.7558],   // Moscow, Russia
+  [103.8198, 1.3521],   // Singapore
+  [126.9780, 37.5665],  // Seoul, South Korea
+  [-3.7038, 40.4168],   // Madrid, Spain
+  [10.7522, 59.9139],   // Stockholm, Sweden
+  [121.5654, 25.0330],  // Taipei, Taiwan
+  [100.5018, 13.7563],  // Bangkok, Thailand
+  [28.9784, 41.0082],   // Istanbul, Turkey
+  [-0.1276, 51.5074],   // London, UK
+  [-74.0060, 40.7128],  // New York, USA
+  [106.8456, 10.8231],  // Hanoi, Vietnam
+];
 
 // —————————————————————————
 // DOM Elements
 // —————————————————————————
 
+const instructionsDiv = document.getElementById('instructions');
 const coordinatesDiv   = document.getElementById('coordinates');
 const modeSelect       = document.getElementById('mode');
+const difficultySelect  = document.getElementById('difficulty');
+const difficultyDiv     = document.getElementById('difficulty-select');
 const guessForm        = document.getElementById('guess-form');
+const submitForm       = document.getElementById('submit-form');
+const submitCoordinatesButton = document.getElementById('submit-coordinates');
 
 const lonDegInput      = document.getElementById('lon-deg');
 const lonMinInput      = document.getElementById('lon-min');
@@ -76,16 +152,21 @@ function toDMS(deg) {
 
 function updateCoordinates(coord) {
   const [lon, lat] = toLonLat(coord);
-  coordinatesDiv.innerHTML = `
-    📍 <strong>Longitude:</strong> ${toDMS(lon)} |
-    <strong>Latitude:</strong> ${toDMS(lat)}
-  `;
+  coordinatesDiv.innerHTML = `📍 <strong>Longitude:</strong> ${toDMS(lon)} | <strong>Latitude:</strong> ${toDMS(lat)}`;
 }
 
-function randomCoordinate() {
-  const lon = (Math.random() * 360) - 180;
-  const lat = (Math.random() * 180) - 90;
-  return fromLonLat([lon, lat]);
+function randomCoordinate(difficulty) {
+  if (difficulty === 'easy') {
+    const randomIndex = Math.floor(Math.random() * easyCoordinates.length);
+    return fromLonLat(easyCoordinates[randomIndex]);
+  } else if (difficulty === 'normal') {
+    const randomIndex = Math.floor(Math.random() * normalCoordinates.length);
+    return fromLonLat(normalCoordinates[randomIndex]);
+  } else {
+    const lon = (Math.random() * 360) - 180;
+    const lat = (Math.random() * 180) - 90;
+    return fromLonLat([lon, lat]);
+  }
 }
 
 function calculateDistance([lon1, lat1], [lon2, lat2]) {
@@ -102,11 +183,7 @@ function calculateDistance([lon1, lat1], [lon2, lat2]) {
 
 function displayTargetCoordinates(coord) {
   const [lon, lat] = toLonLat(coord);
-  coordinatesDiv.innerHTML = `
-    🎯 Target:<br>
-    <strong>Longitude:</strong> ${toDMS(lon)} |
-    <strong>Latitude:</strong> ${toDMS(lat)}
-  `;
+  coordinatesDiv.innerHTML = `🎯 Target: <strong>Longitude:</strong> ${toDMS(lon)} | <strong>Latitude:</strong> ${toDMS(lat)}`;
 }
 
 function displayDistanceResult(m) {
@@ -120,13 +197,31 @@ function placeFixedMarker(coord) {
   vectorSource.addFeature(m);
 }
 
+function placeGuessedMarker(coord) {
+  const m = new Feature(new Point(coord));
+  m.set('type', 'guessed');
+  vectorSource.addFeature(m);
+}
+
+function drawLineBetweenMarkers(coord1, coord2) {
+  const line = new Feature(new LineString([coord1, coord2]));
+  line.set('type', 'line');
+  vectorSource.addFeature(line);
+}
+
 function hideForms() {
   guessForm.style.display = 'none';
+  submitForm.style.display = 'none';
 }
 
 function showGuessForm() {
   guessForm.style.display = 'flex';
-  coordinatesDiv.innerHTML = `🧭 Enter your guess (DMS) and Submit`;
+  instructionsDiv.innerHTML = `🧭 Enter your guess (DMS) and Submit`;
+}
+
+function showSubmitForm() {
+  submitForm.style.display = 'flex';
+  instructionsDiv.innerHTML = `🧭 Click the map to place your guess and then submit`;
 }
 
 function dmsToDecimal(deg, min, sec) {
@@ -151,13 +246,6 @@ map.on('click', (evt) => {
     vectorSource.clear();
     const m = new Feature(new Point(coord));
     vectorSource.addFeature(m);
-    // show target again + distance
-    displayTargetCoordinates(targetCoordinate);
-    const dist = calculateDistance(
-      toLonLat(coord),
-      toLonLat(targetCoordinate)
-    );
-    displayDistanceResult(dist);
   }
   // in point-to-coordinates mode, we only read from the form,
   // so we ignore map clicks here.
@@ -172,22 +260,43 @@ modeSelect.addEventListener('change', (e) => {
   vectorSource.clear();
   targetCoordinate = null;
   hideForms();
+  coordinatesDiv.innerHTML = '';
 
   // reset DMS inputs if present
   [lonDegInput, lonMinInput, lonSecInput,
    latDegInput, latMinInput, latSecInput].forEach(i => i && (i.value=''));
 
   if (currentMode === 'explore') {
-    coordinatesDiv.innerHTML = `🗺️ Click the map to explore`;
+    instructionsDiv.innerHTML = `🗺️ Click the map to explore`;
+    difficultyDiv.style.display = 'none';
   }
   else if (currentMode === 'coordinates-to-point') {
-    targetCoordinate = randomCoordinate();
+    targetCoordinate = randomCoordinate(currentDifficulty);
     displayTargetCoordinates(targetCoordinate);
+    showSubmitForm();
+    difficultyDiv.style.display = 'flex';
   }
   else if (currentMode === 'point-to-coordinates') {
-    targetCoordinate = randomCoordinate();
+    targetCoordinate = randomCoordinate(currentDifficulty);
     placeFixedMarker(targetCoordinate);
     showGuessForm();
+    difficultyDiv.style.display = 'flex';
+  }
+});
+
+// —————————————————————————
+// Difficulty Switch Handler
+// —————————————————————————
+
+difficultySelect.addEventListener('change', (e) => {
+  currentDifficulty = e.target.value;
+  if (currentMode === 'coordinates-to-point' || currentMode === 'point-to-coordinates') {
+    targetCoordinate = randomCoordinate(currentDifficulty);
+    if (currentMode === 'coordinates-to-point') {
+      displayTargetCoordinates(targetCoordinate);
+    } else {
+      placeFixedMarker(targetCoordinate);
+    }
   }
 });
 
@@ -212,15 +321,34 @@ submitGuessButton.addEventListener('click', () => {
   const guessedLon = dmsToDecimal(lonD, lonM, lonS);
   const guessedLat = dmsToDecimal(latD, latM, latS);
 
+  const guessedCoord = fromLonLat([guessedLon, guessedLat]);
+  placeGuessedMarker(guessedCoord);
+  drawLineBetweenMarkers(targetCoordinate, guessedCoord);
+
   const dist = calculateDistance(
-    [guessedLon, guessedLat],
-    toLonLat(targetCoordinate)
+    toLonLat(targetCoordinate),
+    [guessedLon, guessedLat]
   );
 
-  vectorSource.clear();
-  placeFixedMarker(targetCoordinate);
-  const guessFeat = new Feature(new Point(fromLonLat([guessedLon, guessedLat])));
-  vectorSource.addFeature(guessFeat);
+  displayDistanceResult(dist);
+  hideForms();
+});
+
+// —————————————————————————
+// Coordinates Submission Handler
+// —————————————————————————
+
+submitCoordinatesButton.addEventListener('click', () => {
+  if (currentMode !== 'coordinates-to-point') return;
+
+  const guessedCoord = vectorSource.getFeatures()[0].getGeometry().getCoordinates();
+  placeGuessedMarker(guessedCoord);
+  drawLineBetweenMarkers(targetCoordinate, guessedCoord);
+
+  const dist = calculateDistance(
+    toLonLat(targetCoordinate),
+    toLonLat(guessedCoord)
+  );
 
   displayDistanceResult(dist);
   hideForms();
