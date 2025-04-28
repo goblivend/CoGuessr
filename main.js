@@ -34,7 +34,7 @@ const markerStyle = new Style({
   })
 });
 
-const guessedMarkerStyle = new Style({
+const targetMarkerStyle = new Style({
   image: new Icon({
     anchor: [0.5, 1],
     src: 'data:image/svg+xml,' + encodeURIComponent(`
@@ -56,8 +56,8 @@ const lineStyle = new Style({
 const vectorLayer = new VectorLayer({
   source: vectorSource,
   style: (feature) => {
-    if (feature.get('type') === 'guessed') {
-      return guessedMarkerStyle;
+    if (feature.get('type') === 'target') {
+      return targetMarkerStyle;
     } else if (feature.get('type') === 'line') {
       return lineStyle;
     }
@@ -197,9 +197,9 @@ function placeFixedMarker(coord) {
   vectorSource.addFeature(m);
 }
 
-function placeGuessedMarker(coord) {
+function placeTargetMarker(coord) {
   const m = new Feature(new Point(coord));
-  m.set('type', 'guessed');
+  m.set('type', 'target');
   vectorSource.addFeature(m);
 }
 
@@ -342,7 +342,7 @@ submitCoordinatesButton.addEventListener('click', () => {
   if (currentMode !== 'coordinates-to-point') return;
 
   const guessedCoord = vectorSource.getFeatures()[0].getGeometry().getCoordinates();
-  placeGuessedMarker(guessedCoord);
+  placeTargetMarker(tartetCoordinate);
   drawLineBetweenMarkers(targetCoordinate, guessedCoord);
 
   const dist = calculateDistance(
