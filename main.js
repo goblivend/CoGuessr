@@ -342,7 +342,7 @@ submitCoordinatesButton.addEventListener('click', () => {
   if (currentMode !== 'coordinates-to-point') return;
 
   const guessedCoord = vectorSource.getFeatures()[0].getGeometry().getCoordinates();
-  placeTargetMarker(tartetCoordinate);
+  placeTargetMarker(targetCoordinate);
   drawLineBetweenMarkers(targetCoordinate, guessedCoord);
 
   const dist = calculateDistance(
