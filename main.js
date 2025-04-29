@@ -78,6 +78,7 @@ const map = new Map({
 let currentMode = 'explore';
 let targetCoordinate = null;
 let currentDifficulty = 'easy'; // Default difficulty
+let submitted = false;
 
 // —————————————————————————
 // Difficulty Levels
@@ -120,13 +121,13 @@ const easyCoordinates = [
 // DOM Elements
 // —————————————————————————
 
-const instructionsDiv = document.getElementById('instructions');
-const coordinatesDiv   = document.getElementById('coordinates');
-const modeSelect       = document.getElementById('mode');
+const instructionsDiv   = document.getElementById('instructions');
+const coordinatesDiv    = document.getElementById('coordinates');
+const modeSelect        = document.getElementById('mode');
 const difficultySelect  = document.getElementById('difficulty');
 const difficultyDiv     = document.getElementById('difficulty-select');
-const guessForm        = document.getElementById('guess-form');
-const submitForm       = document.getElementById('submit-form');
+const guessForm         = document.getElementById('guess-form');
+const submitForm        = document.getElementById('submit-form');
 const submitCoordinatesButton = document.getElementById('submit-coordinates');
 
 const lonDegInput      = document.getElementById('lon-deg');
@@ -229,12 +230,40 @@ function dmsToDecimal(deg, min, sec) {
   return sign * (Math.abs(deg) + (min/60) + (sec/3600));
 }
 
+function startRound() {
+  submitted = false;
+
+  vectorSource.clear();
+  targetCoordinate = null;
+  coordinatesDiv.innerHTML = '';
+
+  // reset DMS inputs if present
+  [lonDegInput, lonMinInput, lonSecInput,
+   latDegInput, latMinInput, latSecInput].forEach(i => i && (i.value=''));
+
+  targetCoordinate = randomCoordinate(currentDifficulty);
+
+  if (currentMode === 'coordinates-to-point') {
+    displayTargetCoordinates(targetCoordinate);
+    showSubmitForm();
+  }
+  else if (currentMode === 'point-to-coordinates') {
+    placeFixedMarker(targetCoordinate);
+    showGuessForm();
+  }
+}
+
 // —————————————————————————
 // Map Click Handler
 // —————————————————————————
 
 map.on('click', (evt) => {
   const coord = evt.coordinate;
+
+  if (submitted) {
+    startRound();
+    return;
+  }
 
   if (currentMode === 'explore') {
     vectorSource.clear();
@@ -257,31 +286,18 @@ map.on('click', (evt) => {
 
 modeSelect.addEventListener('change', (e) => {
   currentMode = e.target.value;
-  vectorSource.clear();
-  targetCoordinate = null;
-  hideForms();
-  coordinatesDiv.innerHTML = '';
 
-  // reset DMS inputs if present
-  [lonDegInput, lonMinInput, lonSecInput,
-   latDegInput, latMinInput, latSecInput].forEach(i => i && (i.value=''));
+  hideForms();
 
   if (currentMode === 'explore') {
     instructionsDiv.innerHTML = `🗺️ Click the map to explore`;
     difficultyDiv.style.display = 'none';
+    return;
   }
-  else if (currentMode === 'coordinates-to-point') {
-    targetCoordinate = randomCoordinate(currentDifficulty);
-    displayTargetCoordinates(targetCoordinate);
-    showSubmitForm();
-    difficultyDiv.style.display = 'flex';
-  }
-  else if (currentMode === 'point-to-coordinates') {
-    targetCoordinate = randomCoordinate(currentDifficulty);
-    placeFixedMarker(targetCoordinate);
-    showGuessForm();
-    difficultyDiv.style.display = 'flex';
-  }
+
+  difficultyDiv.style.display = 'flex';
+
+  startRound();
 });
 
 // —————————————————————————
@@ -310,6 +326,8 @@ function clamp(value, min, max) {
 
 submitGuessButton.addEventListener('click', () => {
   if (currentMode !== 'point-to-coordinates') return;
+
+  submitted = true;
 
   const lonD = clamp(parseInt(lonDegInput.value, 10) || 0, -180, 180);
   const lonM = clamp(parseInt(lonMinInput.value, 10) || 0, 0, 59);
@@ -340,6 +358,8 @@ submitGuessButton.addEventListener('click', () => {
 
 submitCoordinatesButton.addEventListener('click', () => {
   if (currentMode !== 'coordinates-to-point') return;
+
+  submitted = true;
 
   const guessedCoord = vectorSource.getFeatures()[0].getGeometry().getCoordinates();
   placeTargetMarker(targetCoordinate);
