@@ -291,11 +291,11 @@ modeSelect.addEventListener('change', (e) => {
 
   if (currentMode === 'explore') {
     instructionsDiv.innerHTML = `🗺️ Click the map to explore`;
-    difficultyDiv.style.display = 'none';
+    // difficultyDiv.style.display = 'none';
     return;
   }
 
-  difficultyDiv.style.display = 'flex';
+  // difficultyDiv.style.display = 'flex';
 
   startRound();
 });

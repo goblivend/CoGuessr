@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carte OpenLayers</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/7.2.2/ol.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -17,129 +18,249 @@
             background-color: #f0f2f5;
         }
 
-        #controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-
-        #mode-select,
-        #difficulty-select {
-            padding: 10px 20px;
-            background-color: #ffffff;
-            border-bottom: 1px solid #ddd;
-            font-size: 1.1em;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-
-        #instructions,
-        #coordinates,
-        #guess-form,
-        #submit-form {
-            padding: 10px 20px;
-            background-color: #ffffff;
-            border-bottom: 1px solid #ddd;
-            font-size: 1.1em;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #mode,
-        #difficulty {
-            font-size: 1em;
-            padding: 5px 10px;
-        }
-
-        #instructions {
-            flex-direction: column;
-            text-align: center;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        #coordinates {
-            display: flex;
-            flex-wrap: nowrap;
-            justify-content: center;
-            gap: 10px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
         #map {
             flex: 1;
             width: 100%;
             height: 100%;
         }
 
-        #guess-form,
-        #submit-form {
+        .modal {
             display: none;
-            flex-direction: column;
-            align-items: center;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
         }
 
-        #guess-form input,
-        #submit-form input {
-            margin: 5px;
-            padding: 5px;
-            font-size: 1em;
-            width: 150px;
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
-        #guess-form button,
-        #submit-form button {
-            padding: 5px 15px;
-            font-size: 1em;
-            margin-top: 10px;
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
             cursor: pointer;
         }
 
         .dms-group {
-            margin-bottom: 10px;
-            width: 100%;
-            box-sizing: border-box;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .dms-group label {
+            font-size: 1rem;
+            margin-right: 0.5rem;
         }
 
         .dms-inputs {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 0.5rem;
             flex-wrap: wrap;
-            justify-content: center;
         }
 
         .dms-inputs input {
-            width: 60px;
-            padding: 5px;
-            font-size: 14px;
+            width: 5rem;
+            padding: 0.5rem;
+            font-size: 1rem;
             text-align: right;
         }
 
         .dms-inputs span {
-            margin-right: 10px;
-            font-size: 16px;
+            font-size: 1.25rem;
+        }
+
+        #controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #button-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        #instructions {
+            text-align: center;
+            width: 100%;
+            padding: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (min-width: 768px) {
+            #controls {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            #button-container {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            #instructions {
+                order: 1;
+                flex: 1;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            #open-difficulty-modal {
+                order: 2;
+            }
+
+            #open-mode-modal {
+                order: 0;
+            }
+        }
+
+        @media (max-width: 767px) {
+            #controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #button-container {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+
+            #instructions {
+                order: 2;
+                margin-top: 1rem;
+                width: 100%;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div id="controls">
-        <div id="mode-select">
-            <select id="mode">
+    <div id="controls" class="flex p-2 bg-white shadow-md">
+        <button id="open-mode-modal"
+            class="px-4 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            🗺️ Mode
+        </button>
+        <div id="instructions" class="text-center flex-grow">
+            📍 Choose a mode to begin
+        </div>
+        <button id="open-difficulty-modal"
+            class="px-4 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            🌟 Difficulty
+        </button>
+    </div>
+
+    <div id="coordinates"
+        class="p-2 bg-white shadow-md flex justify-center items-center flex-wrap gap-2 overflow-hidden text-ellipsis">
+    </div>
+
+    <div id="guess-form" class="hidden p-2 bg-white shadow-md flex flex-col items-center">
+        <h3 class="text-lg font-semibold mb-2">Guess the coordinates (DMS format)</h3>
+
+        <div class="dms-group w-full">
+            <label class="text-gray-700">Longitude:</label>
+            <div class="dms-inputs">
+                <input id="lon-deg" type="number" min="-180" max="180"
+                    class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
+                <span>°</span>
+                <input id="lon-min" type="number" min="0" max="59"
+                    class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
+                <span>'</span>
+                <input id="lon-sec" type="number" min="0" max="59.9999" step="0.01"
+                    class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
+                <span>"</span>
+            </div>
+        </div>
+
+        <div class="dms-group w-full">
+            <label class="text-gray-700">Latitude:</label>
+            <div class="dms-inputs">
+                <input id="lat-deg" type="number" min="-90" max="90"
+                    class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
+                <span>°</span>
+                <input id="lat-min" type="number" min="0" max="59"
+                    class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
+                <span>'</span>
+                <input id="lat-sec" type="number" min="0" max="59.9999" step="0.01"
+                    class="p-2 border rounded shadow-sm focus:outline-none focus:ring-blue-500 text-right">
+                <span>"</span>
+            </div>
+        </div>
+
+        <button id="submit-guess"
+            class="px-6 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2">Submit
+            Guess</button>
+    </div>
+
+    <div id="submit-form" class="hidden p-2 bg-white shadow-md flex flex-col items-center">
+        <button id="submit-coordinates"
+            class="px-6 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Submit
+            Coordinates</button>
+    </div>
+
+    <div id="map" class="map"></div>
+
+    <!-- Mode Modal -->
+    <div id="mode-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="text-lg font-semibold mb-2">Select Mode</h2>
+            <select id="mode"
+                class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
                 <option value="explore">🗺️ Explore</option>
                 <option value="coordinates-to-point">🎯 Coordinates ➔ Point</option>
                 <option value="point-to-coordinates">🧭 Point ➔ Coordinates</option>
             </select>
         </div>
+    </div>
 
-        <div id="difficulty-select" style="display: none;">
-            <select id="difficulty">
+    <!-- Difficulty Modal -->
+    <div id="difficulty-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="text-lg font-semibold mb-2">Select Difficulty</h2>
+            <select id="difficulty"
+                class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
                 <option value="easy">🌟 Easy</option>
                 <!-- <option value="normal">🌟🌟 Normal</option> -->
                 <option value="expert">🌟🌟🌟 Expert</option>
@@ -147,40 +268,39 @@
         </div>
     </div>
 
-    <div id="instructions">📍 Choose a mode to begin</div>
-    <div id="coordinates"></div>
-
-    <div id="guess-form">
-        <h3>Guess the coordinates (DMS format)</h3>
-
-        <div class="dms-group">
-            <label>Longitude:</label>
-            <div class="dms-inputs">
-                <input id="lon-deg" type="number" min="-180" max="180"><span>°</span>
-                <input id="lon-min" type="number" min="0" max="59"><span>'</span>
-                <input id="lon-sec" type="number" min="0" max="59.9999" step="0.01"><span>"</span>
-            </div>
-        </div>
-
-        <div class="dms-group">
-            <label>Latitude:</label>
-            <div class="dms-inputs">
-                <input id="lat-deg" type="number" min="-90" max="90"><span>°</span>
-                <input id="lat-min" type="number" min="0" max="59"><span>'</span>
-                <input id="lat-sec" type="number" min="0" max="59.9999" step="0.01"><span>"</span>
-            </div>
-        </div>
-
-        <button id="submit-guess">Submit Guess</button>
-    </div>
-
-    <div id="submit-form">
-        <button id="submit-coordinates">Submit Coordinates</button>
-    </div>
-
-    <div id="map" class="map"></div>
-
     <script src="bundle.js"></script>
+    <script>
+        // Modal functionality
+        const modeModal = document.getElementById('mode-modal');
+        const difficultyModal = document.getElementById('difficulty-modal');
+        const openModeModalBtn = document.getElementById('open-mode-modal');
+        const openDifficultyModalBtn = document.getElementById('open-difficulty-modal');
+        const closeBtns = document.getElementsByClassName('close');
+
+        openModeModalBtn.onclick = function () {
+            modeModal.style.display = 'block';
+        }
+
+        openDifficultyModalBtn.onclick = function () {
+            difficultyModal.style.display = 'block';
+        }
+
+        for (let btn of closeBtns) {
+            btn.onclick = function () {
+                modeModal.style.display = 'none';
+                difficultyModal.style.display = 'none';
+            }
+        }
+
+        window.onclick = function (event) {
+            if (event.target == modeModal) {
+                modeModal.style.display = 'none';
+            }
+            if (event.target == difficultyModal) {
+                difficultyModal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 
 </html>
