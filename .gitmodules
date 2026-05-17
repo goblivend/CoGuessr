@@ -1,2 +1,3 @@
 [submodule "dist/commons"]
 	path = dist/commons
+	url = https://github.com/goblivend/commons-website
