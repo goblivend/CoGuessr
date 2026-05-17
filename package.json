@@ -1,8 +1,9 @@
 {
-  "name": "your-project-name",
+  "name": "coguessr",
   "version": "1.0.0",
   "scripts": {
     "build": "webpack",
+    "build:prod": "webpack --mode production",
     "start": "http-server dist -c-1 -p 8080"
   },
   "devDependencies": {

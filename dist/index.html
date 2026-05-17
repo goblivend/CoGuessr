@@ -7,172 +7,8 @@
     <title>Carte OpenLayers</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/7.2.2/ol.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-        }
-
-        #map {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0, 0, 0);
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .dms-group {
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .dms-group label {
-            font-size: 1rem;
-            margin-right: 0.5rem;
-        }
-
-        .dms-inputs {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .dms-inputs input {
-            width: 5rem;
-            padding: 0.5rem;
-            font-size: 1rem;
-            text-align: right;
-        }
-
-        .dms-inputs span {
-            font-size: 1.25rem;
-        }
-
-        #controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0.5rem;
-            background-color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        #button-container {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding: 0 1rem;
-        }
-
-        #instructions {
-            text-align: center;
-            width: 100%;
-            padding: 0.5rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        @media (min-width: 768px) {
-            #controls {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            #button-container {
-                display: flex;
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            #instructions {
-                order: 1;
-                flex: 1;
-                text-align: center;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            #open-difficulty-modal {
-                order: 2;
-            }
-
-            #open-mode-modal {
-                order: 0;
-            }
-        }
-
-        @media (max-width: 767px) {
-            #controls {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            #button-container {
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-                margin-bottom: 1rem;
-            }
-
-            #instructions {
-                order: 2;
-                margin-top: 1rem;
-                width: 100%;
-                text-align: center;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="commons/common-styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -181,6 +17,19 @@
             class="px-4 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
             🗺️ Mode
         </button>
+        <!-- Theme toggle from commons-website -->
+        <label class="theme-switch ml-2" title="Toggle dark mode">
+            <input id="theme-toggle" type="checkbox" aria-label="Toggle dark mode">
+            <span class="switch" aria-hidden="true">
+                <svg class="icon sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path
+                        d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zM1 13h3v-2H1v2zm10-9h2V1h-2v3zm7.03 2.05l1.79-1.79-1.79-1.79-1.79 1.79 1.79 1.79zM17.24 19.16l1.79 1.79 1.79-1.79-1.79-1.79-1.79 1.79zM21 11v2h3v-2h-3zM12 6a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 110 8 4 4 0 010-8zM4.24 19.16l1.79 1.79 1.79-1.79-1.79-1.79-1.79 1.79z" />
+                </svg>
+                <svg class="icon moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M20.742 13.045A8.088 8.088 0 0111 4a8 8 0 108.742 9.045z" />
+                </svg>
+            </span>
+        </label>
         <div id="instructions" class="text-center flex-grow">
             📍 Choose a mode to begin
         </div>
@@ -200,8 +49,13 @@
         <div class="dms-group w-full">
             <label class="text-gray-700">Longitude:</label>
             <div class="dms-inputs">
-                <input id="lon-deg" type="number" min="-180" max="180"
+                <input id="lon-deg" type="text" value="0" style="min-width:6.5rem"
                     class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
+                <select id="lon-dir" aria-label="Longitude direction" class="p-2 border rounded shadow-sm ml-2"
+                    style="width:4.5rem; display:inline-block; vertical-align:middle; margin-left:0.5rem">
+                    <option value="E">E</option>
+                    <option value="W">W</option>
+                </select>
                 <span>°</span>
                 <input id="lon-min" type="number" min="0" max="59"
                     class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
@@ -215,8 +69,13 @@
         <div class="dms-group w-full">
             <label class="text-gray-700">Latitude:</label>
             <div class="dms-inputs">
-                <input id="lat-deg" type="number" min="-90" max="90"
+                <input id="lat-deg" type="text" value="0" style="min-width:6.5rem"
                     class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
+                <select id="lat-dir" aria-label="Latitude direction" class="p-2 border rounded shadow-sm ml-2"
+                    style="width:4.5rem; display:inline-block; vertical-align:middle; margin-left:0.5rem">
+                    <option value="N">N</option>
+                    <option value="S">S</option>
+                </select>
                 <span>°</span>
                 <input id="lat-min" type="number" min="0" max="59"
                     class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
@@ -262,45 +121,15 @@
             <select id="difficulty"
                 class="p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
                 <option value="easy">🌟 Easy</option>
-                <!-- <option value="normal">🌟🌟 Normal</option> -->
+                <option value="normal">🌟🌟 Normal</option>
                 <option value="expert">🌟🌟🌟 Expert</option>
             </select>
         </div>
     </div>
 
     <script src="bundle.js"></script>
-    <script>
-        // Modal functionality
-        const modeModal = document.getElementById('mode-modal');
-        const difficultyModal = document.getElementById('difficulty-modal');
-        const openModeModalBtn = document.getElementById('open-mode-modal');
-        const openDifficultyModalBtn = document.getElementById('open-difficulty-modal');
-        const closeBtns = document.getElementsByClassName('close');
-
-        openModeModalBtn.onclick = function () {
-            modeModal.style.display = 'block';
-        }
-
-        openDifficultyModalBtn.onclick = function () {
-            difficultyModal.style.display = 'block';
-        }
-
-        for (let btn of closeBtns) {
-            btn.onclick = function () {
-                modeModal.style.display = 'none';
-                difficultyModal.style.display = 'none';
-            }
-        }
-
-        window.onclick = function (event) {
-            if (event.target == modeModal) {
-                modeModal.style.display = 'none';
-            }
-            if (event.target == difficultyModal) {
-                difficultyModal.style.display = 'none';
-            }
-        }
-    </script>
+    <script src="commons/theme-toggle.js" defer></script>
+    <script src="controls.js" defer></script>
 </body>
 
 </html>

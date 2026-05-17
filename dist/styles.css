@@ -1,0 +1,244 @@
+/* Extracted styles from dist/index.html - kept intact so theme vars apply */
+/* Layout overrides for the CoGuessr dist page */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+#map {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: var(--bg-primary);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    width: 80%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dms-group {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.dms-group label {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+}
+
+.dms-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.dms-inputs input {
+    width: 5rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+    text-align: right;
+}
+
+.dms-inputs span {
+    font-size: 1.25rem;
+}
+
+#controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    background: var(--bg-primary);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#button-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 1rem;
+}
+
+#instructions {
+    text-align: center;
+    width: 100%;
+    padding: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (min-width: 768px) {
+    #controls {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #button-container {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #instructions {
+        order: 1;
+        flex: 1;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #open-difficulty-modal {
+        order: 2;
+    }
+
+    #open-mode-modal {
+        order: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    #controls {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #button-container {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    #instructions {
+        order: 2;
+        margin-top: 1rem;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* Make Tailwind `bg-white` utilities theme-aware for dark mode.
+   This ensures elements that were built with Tailwind's `bg-white`
+   switch to the theme background when `data-theme="dark"` is set. */
+html[data-theme="dark"] .bg-white {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-dark) !important;
+}
+
+/* Ensure modal form controls follow theme variables */
+.modal-content input,
+.modal-content select,
+.modal-content textarea,
+.modal-content .p-2,
+.modal-content .border {
+    background: var(--bg-primary) !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Also ensure the guess form inputs (not inside modal) follow theme variables
+   so they remain readable when the site is in dark mode. */
+html[data-theme="dark"] #guess-form input,
+html[data-theme="dark"] #guess-form select,
+html[data-theme="dark"] #guess-form textarea,
+html[data-theme="dark"] .dms-inputs input {
+    background: var(--bg-secondary) !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Make labels and helper text readable in dark theme */
+html[data-theme="dark"] .text-gray-700 {
+    color: var(--text-light) !important;
+}
+
+/* Buttons inside controls/modals: keep primary look but ensure contrast */
+.modal-content button,
+#controls button {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--text-white);
+    border: none;
+}
+
+/* Ensure small containers using Tailwind utilities adopt theme colors */
+html[data-theme="dark"] .shadow-md {
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6) !important;
+}
+
+/* Map theming: apply gentle darkening/filtering in dark mode so map tiles blend */
+.map {
+    background: var(--bg-secondary);
+}
+
+html[data-theme="dark"] .map {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+}
+
+/* Dark-mode styling for the basemap selector added to controls */
+html[data-theme="dark"] #basemap-select,
+html[data-theme="dark"] #basemap-select option {
+    background: var(--bg-secondary) !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Ensure the select element itself respects theme variables */
+#basemap-select {
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    background: var(--bg-primary);
+    color: var(--text-dark);
+    border: 1px solid var(--border-color);
+}
+
+/* When the theme sync script toggles `.theme-dark` on #map we apply a visual filter
+   to reduce brightness/contrast so typical light tile basemaps look better with the UI. */
+.map.theme-dark {
+    filter: brightness(0.78) contrast(1.05) saturate(0.95);
+}
