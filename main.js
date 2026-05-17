@@ -21,7 +21,7 @@ const view = new View({
 });
 
 // Light (default) basemap variants and current selection
-let currentLightVariant = 'osm';
+let currentLightVariant = 'esri-street';
 const lightVariants = {
   osm: {
     url: null,
@@ -117,8 +117,9 @@ const darkVariants = {
   }
 };
 
-// Use the Stadia dark style by default (so it's not too black)
-let currentDarkVariant = 'stadia';
+// Use an auth-free dark style by default so GitHub Pages does not depend on
+// provider-specific authentication or referer restrictions.
+let currentDarkVariant = 'carto-dark';
 
 // Helper: create an XYZ source and resolve {s} subdomains for providers like Stamen
 function createXYZSourceForVariant(variant) {
@@ -231,17 +232,21 @@ const map = new Map({
 });
 
 // Theme sync: keep the map element in sync with the site theme.
-function updateMapTheme() {
-  const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+function updateMapTheme(themeOverride) {
+  const theme = themeOverride === 'dark' || themeOverride === 'light'
+    ? themeOverride
+    : (document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
 
+  // Re-apply the active basemap for the current theme so the map source,
+  // visibility, and stored variant stay aligned after a theme flip.
+  try {
+    setBasemapVariant(theme === 'dark' ? currentDarkVariant : currentLightVariant);
+  } catch (e) { /* ignore */ }
+
   if (theme === 'dark') {
     mapEl.classList.add('theme-dark');
-    try { darkLayer.setVisible(true); } catch (e) { }
-    try { darkOverlayLayer.setVisible(true); } catch (e) { }
-    try { lightLayer.setVisible(false); } catch (e) { }
-    // apply per-variant visual adjustments
     try {
       const v = darkVariants[currentDarkVariant] || {};
       if (typeof v.opacity === 'number') darkLayer.setOpacity(v.opacity);
@@ -251,9 +256,6 @@ function updateMapTheme() {
   }
   else {
     mapEl.classList.remove('theme-dark');
-    try { darkLayer.setVisible(false); } catch (e) { }
-    try { darkOverlayLayer.setVisible(false); } catch (e) { }
-    try { lightLayer.setVisible(true); } catch (e) { }
     // clear any map-level filter applied for dark variants
     try { document.getElementById('map').style.filter = ''; } catch (e) { }
   }
@@ -262,6 +264,10 @@ function updateMapTheme() {
   try { map.render(); } catch (e) { /* ignore if not available */ }
   // Keep the basemap selector in sync with the active theme/layer
   try { updateBasemapSelect(); } catch (e) { /* ignore */ }
+}
+
+if (typeof window !== 'undefined') {
+  window.updateMapTheme = updateMapTheme;
 }
 
 // Allow runtime switching of the dark basemap variant
@@ -351,9 +357,18 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch (e) { /* ignore */ }
 });
 
-// React to the commons-website `site:theme-change` event if present
-window.addEventListener('site:theme-change', (e) => {
-  updateMapTheme();
+document.addEventListener('DOMContentLoaded', () => {
+  const themeToggle = document.getElementById('theme-toggle');
+  if (!themeToggle) return;
+
+  themeToggle.addEventListener('change', () => {
+    requestAnimationFrame(() => updateMapTheme());
+  });
+});
+
+// React to the generic themechange event emitted by the shared helper.
+window.addEventListener('site:theme-change', (event) => {
+  updateMapTheme(event && event.detail && event.detail.theme);
 });
 
 // Observe data-theme attribute changes as a fallback
